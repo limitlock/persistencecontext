@@ -1,15 +1,16 @@
 package com.cafe24.persist;
 
+import java.util.List;
+
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.EntityTransaction;
 import javax.persistence.Persistence;
-
-import org.hibernate.annotations.DynamicUpdate;
+import javax.persistence.TypedQuery;
 
 import com.cafe24.persist.domain.Member;
 
-public class App3 {
+public class App5 {
 	public static void main(String[] args) {
 
 		// 1. Entity Manager Factory 생성
@@ -27,17 +28,21 @@ public class App3 {
 
 		// 5. Business Logic
 		try {
-			Member memberC = new Member();
-			memberC.setId("memberC");
-			memberC.setName("회원C");
-			em.persist(memberC);
+			Member user1 = new Member();
+			user1.setId("user1");
+			user1.setName("사용자1");
+			em.persist(user1);
 
-			memberC.setName("둘리");
+			Member user2 = new Member();
+			user2.setId("user2");
+			user2.setName("사용자2");
+			em.persist(user2);
 
-			// JPA는 update()메소드가 존재하지 않는다.
-			// 변경감지(Dirty Checking)를 이용하여 1차 캐시에
-			// 저장된 데이터가 기존의 값과 변경되었는지를 확인하고
-			// 변경되었다면 sql update문을 실행한다.
+			TypedQuery<Member> query = em.createQuery("select m from Member m", Member.class);
+			List<Member> list = query.getResultList();
+			for (Member member : list) {
+				System.out.println(member);
+			}
 
 		} catch (Exception e) {
 			tx.rollback();
@@ -45,9 +50,7 @@ public class App3 {
 		}
 
 		// 6. TX Commit
-		// 6-1. 커밋하는 순간에 변경감지(Dirty Checking)을 한다.
-		// 6-2. 변경이 감지되면 update sql를 저장소에 저장한다.
-		// 6-3. flush()
+		// 커밋되는 순간 데이터베이스에 delete SQL를 보낸다.
 		tx.commit(); // [트랜잭션] 커밋
 
 		// 7. Entity Manager 종료
